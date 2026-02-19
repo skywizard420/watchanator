@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<<header class="banner-header">
+  <h1>SavingTime Watchanator 2.0 Cleaning Program</h1>
+</header>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SavingTime Watchanator 2.0 Cleaning Program</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/CSS" href="pictures/savingtime.CSS">
+
+  <style>
+   /* Banner at the top using the uploaded image */
+header.banner-header {
+  background-image: url("pictures/savingtime.jpg"); /* path to your image */
+  background-size: cover;      /* make image cover the entire header */
+  background-position: center; /* center the image */
+  background-repeat: no-repeat;/* prevent tiling */
+  height: 180px;               /* adjust height as needed */
+  display: flex;
+  align-items: center;         /* vertically center text */
+  justify-content: center;     /* horizontally center text */
+}
+
+/* Make header text readable on top of the image */
+header.banner-header h1 {
+  background-color: rgba(0, 74, 173, 0.85); /* semi-transparent overlay */
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 1.6em;
+  text-align: center;
+}
+
+  </style>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f3f5f9;
+    margin: 0;
+    padding: 0;
+  }
+
+  
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.6em;
+  }
+
+  nav {
+    display: flex;
+    background: #ddd;
+  }
+
+  nav button {
+    flex: 1;
+    border: none;
+    background: #ddd;
+    padding: 12px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  nav button.active {
+    background: #004aad;
+    color: #fff;
+  }
+
+  .content {
+    padding: 15px;
+    display: none;
+  }
+
+  .content.active {
+    display: block;
+  }
+
+  .category, .subcategory, .item, .receipt {
+    margin-bottom: 8px;
+  }
+
+ .category {
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 10px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  }
+
+  .subcategory {
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 8px;
+  }
+
+  .item {
+    display: flex;
+    justify-content: space-between;
+    background: #fff;
+    border-radius: 6px;
+    padding: 5px;
+    border: 1px solid #ddd;
+  }
+
+  .receipt {
+    background: #e7ffe6;
+    border: 1px solid #00b359;
+    border-radius: 5px;
+    padding: 10px;
+    display: none;
+  }
+
+  .completed-list {
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+  .completed-item {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #f8f8f8;
+    cursor: pointer;
+  }
+
+  .completed-item:hover {
+    background: #eef6ff;
+  }
+
+  .details {
+    margin-top: 8px;
+    background: #fff;
+    padding: 8px;
+    border-radius: 6px;
+    display: none;
+  }
+
+  .chatbot {
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  }
+
+  #chat-log {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fafafa;
+  }
+
+  .msg { margin: 6px 0; }
+  .user { color: #004aad; font-weight: bold; }
+  .bot { color: #333; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SavingTime Watchanator 2.0 Cleaning Program</h1>
+</header>
+
+<nav>
+  <button class="tab active" onclick="switchTab('tracker-tab')">Tracker</button>
+  <button class="tab" onclick="switchTab('completed-tab')">Completed</button>
+  <button class="tab" onclick="switchTab('chat-tab')">Assistant</button>
+</nav>
+
+<!-- Tracker Section -->
+<div id="tracker-tab" class="content active">
+  <h2>Tracking Watches, Clocks & Pocket Watches</h2>
+  <div id="categories"></div>
+</div>
+
+<!-- Completed Section -->
+<div id="completed-tab" class="content">
+  <h2>✅ Completed Categories</h2>
+  <div id="completed-list" class="completed-list"></div>
+</div>
+
+<!-- Chatbot Section -->
+<div id="chat-tab" class="content">
+  <div class="chatbot">
+    <h3>Chat with your Assistant</h3>
+    <div id="chat-log"></div>
+    <div style="display:flex; margin-top:10px;">
+      <input id="chat-input" type="text" style="flex:1; padding:6px; border:1px solid #ccc; border-radius:5px;" placeholder="Ask about your watches...">
+      <button onclick="sendChat()">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- Tracker Data ------------------ */
+const categoriesData = ["Watches", "Clocks", "Pocket Watches"];
+let data = JSON.parse(localStorage.getItem("trackerData")) || {
+  Watches: [],
+  Clocks: [],
+  "Pocket Watches": []
+};
+const container = document.getElementById("categories");
+
+function formatDuration(ms){
+  const s=Math.floor(ms/1000),m=Math.floor(s/60);
+  return `${m}m ${s%60}s`;
+}
+function saveData(){
+  localStorage.setItem("trackerData", JSON.stringify(data));
+  populateCompleted();
+}
+
+function loadTracker(){
+  container.innerHTML="";
+  categoriesData.forEach(cat=>{
+    const catDiv=document.createElement("div");
+    catDiv.className="category";
+    catDiv.innerHTML=`
+      <h3>${cat}</h3>
+      <div>
+        <input placeholder="Add subcategory..." class="sub-input"/>
+        <button>Add</button>
+      </div>
+      <div class="sub-list"></div>`;
+    container.appendChild(catDiv);
+    (data[cat]||[]).forEach(sub=>renderSub(catDiv,cat,sub));
+    catDiv.querySelector("button").onclick=()=>{
+      const val=catDiv.querySelector(".sub-input").value.trim(); if(!val) return;
+      const subObj={name:val,startTime:Date.now(),items:[],finished:false,endTime:null};
+      data[cat].push(subObj); saveData();
+      renderSub(catDiv,cat,subObj); catDiv.querySelector(".sub-input").value="";
+    };
+  });
+}
+
+function renderSub(catDiv,catName,subObj){
+  const subDiv=document.createElement("div");
+  subDiv.className="subcategory";
+  subDiv.dataset.startTime=subObj.startTime;
+  subDiv.innerHTML=`
+    <div style="display:flex;justify-content:space-between;">
+      <strong>${subObj.name}</strong>
+      <div>
+        <input placeholder="Add item..." class="item-input"/>
+        <button class="add-item">Add</button>
+      </div>
+    </div>
+    <div class="item-list"></div>
+    <div class="receipt"></div>`;
+  catDiv.querySelector(".sub-list").appendChild(subDiv);
+  subObj.items.forEach(it=>renderItem(subDiv.querySelector(".item-list"),subObj,it));
+  if(subObj.finished) showReceipt(subDiv,subObj);
+  subDiv.querySelector(".add-item").onclick=()=>{
+    const input=subDiv.querySelector(".item-input"),val=input.value.trim(); if(!val)return;
+    const newItem={name:val,checked:false,startUnchecked:Date.now(),checkedTime:null};
+    subObj.items.push(newItem);
+    renderItem(subDiv.querySelector(".item-list"),subObj,newItem);
+    saveData(); input.value="";
+  };
+}
+
+function renderItem(list,subObj,item){
+  const itemDiv=document.createElement("div");
+  itemDiv.className="item";
+  itemDiv.innerHTML=`
+    <label><input type="checkbox" ${item.checked?"checked":""}/> ${item.name}</label>
+    <div class="time"></div>`;
+  const timeDiv=itemDiv.querySelector(".time"); list.appendChild(itemDiv);
+  if(!item.checked){updateUnchecked(item,timeDiv); item.timer=setInterval(()=>updateUnchecked(item,timeDiv),1000);}
+  else timeDiv.textContent="✅ At "+new Date(item.checkedTime).toLocaleTimeString();
+  const box=itemDiv.querySelector("input");
+  box.addEventListener("change",()=>{
+    item.checked=box.checked;
+    if(box.checked){if(item.timer)clearInterval(item.timer); item.checkedTime=Date.now();
+      timeDiv.textContent="✅ At "+new Date(item.checkedTime).toLocaleTimeString();
+    }else{item.startUnchecked=Date.now(); item.checkedTime=null; item.timer=setInterval(()=>updateUnchecked(item,timeDiv),1000);}
+    checkCompletion(subObj,list.parentElement); saveData();
+  });
+}
+
+function updateUnchecked(item,el){if(!item.checked){const diff=Date.now()-item.startUnchecked; el.textContent="Unchecked for "+formatDuration(diff);}}
+
+function checkCompletion(subObj,subDiv){
+  const all=subObj.items.length>0 && subObj.items.every(i=>i.checked);
+  subObj.finished=all;
+  if(all){subObj.endTime=Date.now(); showReceipt(subDiv,subObj);} else{subObj.endTime=null; hideReceipt(subDiv);}
+  saveData();
+}
+
+function showReceipt(subDiv,subObj){
+  const r=subDiv.querySelector(".receipt");
+  const total=formatDuration((subObj.endTime??Date.now())-subObj.startTime);
+  r.style.display="block";
+  r.innerHTML=`<b>Receipt:</b><br>Items: ${subObj.items.length}<br>Duration: ${total}<br>Completed: ${new Date(subObj.endTime??Date.now()).toLocaleString()}`;
+}
+function hideReceipt(subDiv){subDiv.querySelector(".receipt").style.display="none";}
+
+/* ---------- Completed Tab ----------- */
+const completedList=document.getElementById("completed-list");
+function populateCompleted(){
+  completedList.innerHTML="";
+  for(const cat in data){
+    data[cat].forEach(sub=>{
+      if(sub.finished){
+        const comp=document.createElement("div");
+        comp.className="completed-item";
+        comp.innerHTML=`<b>${cat} → ${sub.name}</b><br>
+          Completed: ${new Date(sub.endTime).toLocaleString()}`;
+        const details=document.createElement("div");
+        details.className="details";
+        details.innerHTML=sub.items.map(it=>`<div>✅ ${it.name} — ${new Date(it.checkedTime).toLocaleTimeString()}</div>`).join("");
+        comp.appendChild(details);
+        comp.onclick=()=>details.style.display=(details.style.display==="block"?"none":"block");
+        completedList.appendChild(comp);
+      }
+    });
+  }
+  if(!completedList.innerHTML) completedList.innerHTML="<p>No completed categories yet.</p>";
+}
+
+/* ---------- Chatbot ----------- */
+const chatLog=document.getElementById("chat-log");
+function sendChat(){
+  const inp=document.getElementById("chat-input");
+  const msg=inp.value.trim(); if(!msg)return;
+  appendMsg("user",msg); inp.value="";
+  handleBot(msg);
+}
+function appendMsg(role,text){
+  const d=document.createElement("div");
+  d.className="msg "+role;
+  d.textContent=(role==="user"?"You: ":"Bot: ")+text;
+  chatLog.appendChild(d); chatLog.scrollTop=chatLog.scrollHeight;
+}
+function handleBot(txt){
+  txt=txt.toLowerCase(); let reply="";
+  if(txt.includes("completed")) reply="You have "+countCompleted()+" categories done.";
+  else if(txt.includes("receipt")) reply=listReceipts();
+  else reply="Try asking things like 'how many are completed' or 'show receipts'.";
+  appendMsg("bot",reply);
+}
+function countCompleted(){
+  let c=0; for(const cat in data) data[cat].forEach(s=>{if(s.finished)c++;}); return c;
+}
+function listReceipts(){
+  let out=[];
+  for(const cat in data) data[cat].forEach(s=>{if(s.finished) out.push(`${cat} → ${s.name}: ${new Date(s.endTime).toLocaleString()}`);});
+  return out.length?out.join("\n"):"No finished items yet.";
+}
+
+/* ---------- Tabs ----------- */
+function switchTab(id){
+  document.querySelectorAll(".content").forEach(c=>c.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+  event.target.classList.add("active");
+  if(id==="completed-tab") populateCompleted();
+}
+
+loadTracker();
+populateCompleted();
+</script>
+</body>
+</html>
